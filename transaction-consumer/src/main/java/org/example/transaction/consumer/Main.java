@@ -3,7 +3,11 @@ package org.example.transaction.consumer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
+
+import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
+import org.example.transaction.consumer.service.TransactionMessageConsumeService;
 
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
@@ -11,8 +15,8 @@ import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonp.JsonpSupport;
 import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
-import io.helidon.webserver.ServerConfiguration;
 import io.helidon.webserver.WebServer;
+import org.slf4j.LoggerFactory;
 
 /**
  * The application main class.
@@ -27,11 +31,28 @@ public final class Main {
 
     /**
      * Application main entry point.
+     * 
      * @param args command line arguments.
-     * @throws IOException if there are problems reading logging properties
+     * @throws IOException      if there are problems reading logging properties
+     * @throws TimeoutException
      */
-    public static void main(final String[] args) throws IOException {
-        startServer();
+    public static void main(final String[] args) throws IOException, TimeoutException {
+        // By default this will pick up application.yaml from the classpath
+        Config config = Config.create();
+        startMessageReceiver(config.get("rabbitmq"));
+        //startServer(config);
+    }
+
+    static void startMessageReceiver(Config config) throws IOException, TimeoutException {
+        RabbitmqMessageReceiver r = RabbitmqMessageReceiver.Builder.build(
+            config.get("host").asString().get(),
+            config.get("username").asString().get(),
+            config.get("password").asString().get(),
+            config.get("queueName").asString().get()
+        );
+        r.subscribe(new TransactionMessageConsumeService());
+        LoggerFactory.getLogger("Main").info("started");
+        r.start();
     }
 
     /**
@@ -39,12 +60,9 @@ public final class Main {
      * @return the created {@link WebServer} instance
      * @throws IOException if there are problems reading logging properties
      */
-    static WebServer startServer() throws IOException {
+    static WebServer startServer(Config config) throws IOException {
         // load logging configuration
         setupLogging();
-
-        // By default this will pick up application.yaml from the classpath
-        Config config = Config.create();
 
         // Build server with JSONP support
         WebServer server = WebServer.builder(createRouting(config))

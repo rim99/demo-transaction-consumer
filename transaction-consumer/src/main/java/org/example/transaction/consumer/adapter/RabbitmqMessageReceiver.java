@@ -1,0 +1,87 @@
+package org.example.transaction.consumer.adapter;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+
+import com.rabbitmq.client.CancelCallback;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
+
+import org.example.transaction.consumer.entity.TransactionMessage;
+import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
+import org.example.transaction.consumer.port.Producer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class RabbitmqMessageReceiver implements Producer<TransactionMessage> {
+
+    private static final Logger logger = LoggerFactory.getLogger(RabbitmqMessageReceiver.class);
+
+    private List<Consumer<TransactionMessage>> consumers;
+    private Connection connection;
+    private String queueName;
+    private TransactionMessageDeserializer deserializer;
+
+    private RabbitmqMessageReceiver(Connection connection, String queueName) throws IOException {
+        this.consumers = new LinkedList<>();
+        this.connection = connection;
+        this.queueName = queueName;
+        this.deserializer = new TransactionMessageDeserializer();
+    }
+
+    public void start() throws IOException {
+        connection.openChannel()
+            .orElseThrow(() -> new IllegalStateException("Can not reach to RabbitMQ server"))
+            .queueDeclareNoWait(this.queueName, false, false, false, null);
+        recv();
+    }
+
+    @Override
+    synchronized public void subscribe(Consumer<TransactionMessage> c) {
+        consumers.add(c);
+    }
+
+    private void recv() throws IOException {
+        Channel channel = connection.createChannel();
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            deserializer.deserialize(delivery.getBody()).ifPresent(msg -> {
+                for (Consumer<TransactionMessage> consumer: this.consumers) {
+                    consumer.accept(msg);
+                }
+            });
+            
+        };
+        CancelCallback cancelCallback = consumerTag -> {
+            logger.error(" [x] Consumer " + consumerTag + " is cancelled'");
+        };
+        channel.basicConsume(this.queueName, true, deliverCallback, cancelCallback);
+    }
+
+    public static class Builder {
+
+        private Builder() {}
+
+        public static RabbitmqMessageReceiver build(String host, String username, String password, String queueName) throws IOException, TimeoutException {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(host);
+            factory.setUsername(username);
+            factory.setPassword(password);
+            Connection connection = factory.newConnection();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try { 
+                    connection.close();
+                    System.out.println("RabbitMq Connection closed");
+                } catch (Exception e) {
+                    System.out.println("failed to close RabbitMq Connection, detail:" + e);
+                }
+            }));
+            return new RabbitmqMessageReceiver(connection, queueName);
+        }
+    }
+}
