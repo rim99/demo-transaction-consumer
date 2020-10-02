@@ -7,7 +7,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
 import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
+import org.example.transaction.consumer.adapter.RedisStorage;
+import org.example.transaction.consumer.adapter.TransactionAggregationRepositoryImpl;
 import org.example.transaction.consumer.adapter.TransactionRecordPostgresRepository;
+import org.example.transaction.consumer.service.TransactionAggregationService;
 import org.example.transaction.consumer.service.TransactionRecordConsumeService;
 
 import io.helidon.config.Config;
@@ -49,6 +52,7 @@ public final class Main {
         Config rabbitMQConfig = config.get("rabbitmq");
         Config dbConfig = config.get("db");
         DbClient dbClient = DbClient.builder(dbConfig).build();
+        RedisStorage redisStorage = RedisStorage.Builder.build();
         RabbitmqMessageReceiver r = RabbitmqMessageReceiver.Builder.build(
             rabbitMQConfig.get("host").asString().get(),
             rabbitMQConfig.get("username").asString().get(),
@@ -56,7 +60,8 @@ public final class Main {
             rabbitMQConfig.get("queueName").asString().get()
         );
         r.subscribe(new TransactionRecordConsumeService(
-            new TransactionRecordPostgresRepository(dbClient)
+                new TransactionRecordPostgresRepository(dbClient),
+                new TransactionAggregationService(new TransactionAggregationRepositoryImpl(redisStorage))
         ));
         LoggerFactory.getLogger("Main").info("started");
         r.start();

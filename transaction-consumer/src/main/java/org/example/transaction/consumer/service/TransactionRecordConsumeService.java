@@ -12,15 +12,21 @@ public class TransactionRecordConsumeService implements Consumer<TransactionReco
     private static final Logger logger = LoggerFactory.getLogger(TransactionRecordConsumeService.class);
 
     private TransactionRecordRepository transactionMessageRepository;
+    private TransactionAggregationService transactionAggregationService;
 
-    public TransactionRecordConsumeService(TransactionRecordRepository transactionMessageRepository) {
+    public TransactionRecordConsumeService(
+            TransactionRecordRepository transactionMessageRepository,
+            TransactionAggregationService transactionAggregationService
+    ) {
         this.transactionMessageRepository = transactionMessageRepository;
+        this.transactionAggregationService = transactionAggregationService;
     }
 
     @Override
-    public void accept(TransactionRecord txnMsg) {
-        System.out.println("[PRINTing] received one message: " + txnMsg);
-        logger.info("received one message: " + txnMsg);
-        transactionMessageRepository.save(txnMsg);
+    public void accept(TransactionRecord record) {
+        System.out.println("[PRINTing] received one message: " + record);
+        logger.info("received one message: " + record);
+        transactionMessageRepository.save(record);
+        transactionAggregationService.aggregate(record);
     }
 }

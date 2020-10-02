@@ -10,7 +10,7 @@ public class TransactionRecord {
     private Integer mid;
     private Long uid;
     private OffsetDateTime datetime;
-    private Float amount;
+    private double amount;
     private PaymentCurrency currency;
     private PaymentType type;
     private PaymentVendor vendor;
@@ -18,7 +18,7 @@ public class TransactionRecord {
     private Boolean isValid;
     private UUID originPurchaseTransactionId;
 
-    public TransactionRecord(UUID id, Integer mid, Long uid, OffsetDateTime datetime, Float amount,
+    public TransactionRecord(UUID id, Integer mid, Long uid, OffsetDateTime datetime, double amount,
                              PaymentCurrency currency, PaymentType type, PaymentVendor vendor, PaymentStatus status,
                              Boolean isValid, UUID originPurchaseTransactionId) {
         this.id = id;
@@ -50,7 +50,7 @@ public class TransactionRecord {
         return currency;
     }
 
-    public float getAmount() {
+    public double getAmount() {
         return amount;
     }
 
@@ -76,5 +76,22 @@ public class TransactionRecord {
 
     public Optional<UUID> getOriginPurchaseTransactionId() {
         return Optional.ofNullable(originPurchaseTransactionId);
+    }
+
+    @Override
+    public String toString() {
+        return "TransactionRecord{" +
+                "id=" + id +
+                ", mid=" + mid +
+                ", uid=" + uid +
+                ", datetime=" + datetime +
+                ", amount=" + amount +
+                ", currency=" + currency +
+                ", type=" + type +
+                ", vendor=" + vendor +
+                ", status=" + status +
+                ", isValid=" + isValid +
+                ", originPurchaseTransactionId=" + originPurchaseTransactionId +
+                '}';
     }
 }
