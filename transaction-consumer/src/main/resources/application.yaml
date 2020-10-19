@@ -6,6 +6,16 @@ server:
   port: 8080
   host: 0.0.0.0
 
+db:
+  source: "jdbc" 
+  connection:
+    url: "jdbc:postgresql://127.0.0.1:5432/example"
+    username: "user"
+    password: "password"
+    driverClassName: "org.postgresql.ds.PGSimpleDataSource"
+  statements: 
+    ping: "SELECT 1"
+
 rabbitmq:
   host: localhost
   username: user

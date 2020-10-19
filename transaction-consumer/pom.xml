@@ -17,6 +17,7 @@
     <properties>
         <mainClass>org.example.transaction.consumer.Main</mainClass>
         <rabbitmq.version>5.9.0</rabbitmq.version>
+        <postgres.version>42.2.16</postgres.version>
         <dsl-json.version>1.9.5</dsl-json.version>
         <log4j.version>2.13.3</log4j.version>
     </properties>
@@ -47,14 +48,17 @@
             <artifactId>helidon-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <groupId>io.helidon.dbclient</groupId> 
+            <artifactId>helidon-dbclient</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.helidon.webclient</groupId>
-            <artifactId>helidon-webclient</artifactId>
-            <scope>test</scope>
+            <groupId>io.helidon.dbclient</groupId> 
+            <artifactId>helidon-dbclient-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgres.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rabbitmq</groupId>
@@ -80,6 +84,18 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+
+        <!-- for test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.webclient</groupId>
+            <artifactId>helidon-webclient</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

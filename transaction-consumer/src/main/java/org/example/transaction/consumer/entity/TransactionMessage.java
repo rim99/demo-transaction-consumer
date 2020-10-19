@@ -1,6 +1,16 @@
 package org.example.transaction.consumer.entity;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
 import com.dslplatform.json.CompiledJson;
+
+import org.example.transaction.consumer.port.TransactionRecord;
+import org.example.transaction.consumer.port.TransactionRecord.PaymentCurrency;
+import org.example.transaction.consumer.port.TransactionRecord.PaymentStatus;
+import org.example.transaction.consumer.port.TransactionRecord.PaymentType;
+import org.example.transaction.consumer.port.TransactionRecord.PaymentVendor;
 
 @CompiledJson
 public class TransactionMessage {
@@ -97,5 +107,16 @@ public class TransactionMessage {
                 + "]";
     }
 
-    
+    public TransactionRecord toTransactionRecord() {
+        return new TransactionRecord(
+            UUID.fromString(this.id), 
+            Integer.parseInt(this.tid), 
+            Long.parseLong(this.uid),
+            OffsetDateTime.parse(this.datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+            Float.valueOf(this.amount),
+            PaymentCurrency.valueOf(this.currency),
+            PaymentType.getByLabel(this.type),
+            PaymentVendor.getByLabel(this.vendor),
+            PaymentStatus.getByLabel(this.status));
+    }
 }
