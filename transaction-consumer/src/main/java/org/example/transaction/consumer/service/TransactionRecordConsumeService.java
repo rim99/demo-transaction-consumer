@@ -2,18 +2,18 @@ package org.example.transaction.consumer.service;
 
 import java.util.function.Consumer;
 
-import org.example.transaction.consumer.port.TransactionMessageRepository;
+import org.example.transaction.consumer.port.TransactionRecordRepository;
 import org.example.transaction.consumer.port.TransactionRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TransactionMessageConsumeService implements Consumer<TransactionRecord> {
+public class TransactionRecordConsumeService implements Consumer<TransactionRecord> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TransactionMessageConsumeService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TransactionRecordConsumeService.class);
 
-    private TransactionMessageRepository transactionMessageRepository;
+    private TransactionRecordRepository transactionMessageRepository;
 
-    public TransactionMessageConsumeService(TransactionMessageRepository transactionMessageRepository) {
+    public TransactionRecordConsumeService(TransactionRecordRepository transactionMessageRepository) {
         this.transactionMessageRepository = transactionMessageRepository;
     }
 

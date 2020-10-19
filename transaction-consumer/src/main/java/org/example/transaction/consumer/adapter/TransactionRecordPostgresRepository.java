@@ -1,15 +1,15 @@
 package org.example.transaction.consumer.adapter;
 
-import org.example.transaction.consumer.port.TransactionMessageRepository;
+import org.example.transaction.consumer.port.TransactionRecordRepository;
 import org.example.transaction.consumer.port.TransactionRecord;
 
 import io.helidon.dbclient.DbClient;
 
-public class TransactionMessagePostgresRepository implements TransactionMessageRepository {
+public class TransactionRecordPostgresRepository implements TransactionRecordRepository {
 
     private DbClient pgClient;
 
-    public TransactionMessagePostgresRepository(DbClient pgClient) {
+    public TransactionRecordPostgresRepository(DbClient pgClient) {
         this.pgClient = pgClient;
     }
 
