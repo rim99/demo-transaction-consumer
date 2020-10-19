@@ -7,9 +7,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
 import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
+import org.example.transaction.consumer.adapter.TransactionMessagePostgresRepository;
 import org.example.transaction.consumer.service.TransactionMessageConsumeService;
 
 import io.helidon.config.Config;
+import io.helidon.dbclient.DbClient;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonp.JsonpSupport;
@@ -39,18 +41,23 @@ public final class Main {
     public static void main(final String[] args) throws IOException, TimeoutException {
         // By default this will pick up application.yaml from the classpath
         Config config = Config.create();
-        startMessageReceiver(config.get("rabbitmq"));
+        startMessageReceiver(config);
         //startServer(config);
     }
 
     static void startMessageReceiver(Config config) throws IOException, TimeoutException {
+        Config rabbitMQConfig = config.get("rabbitmq");
+        Config dbConfig = config.get("db");
+        DbClient dbClient = DbClient.builder(dbConfig).build();
         RabbitmqMessageReceiver r = RabbitmqMessageReceiver.Builder.build(
-            config.get("host").asString().get(),
-            config.get("username").asString().get(),
-            config.get("password").asString().get(),
-            config.get("queueName").asString().get()
+            rabbitMQConfig.get("host").asString().get(),
+            rabbitMQConfig.get("username").asString().get(),
+            rabbitMQConfig.get("password").asString().get(),
+            rabbitMQConfig.get("queueName").asString().get()
         );
-        r.subscribe(new TransactionMessageConsumeService());
+        r.subscribe(new TransactionMessageConsumeService(
+            new TransactionMessagePostgresRepository(dbClient)
+        ));
         LoggerFactory.getLogger("Main").info("started");
         r.start();
     }

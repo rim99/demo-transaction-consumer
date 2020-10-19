@@ -12,17 +12,17 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import org.example.transaction.consumer.entity.TransactionMessage;
 import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
 import org.example.transaction.consumer.port.Producer;
+import org.example.transaction.consumer.port.TransactionRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RabbitmqMessageReceiver implements Producer<TransactionMessage> {
+public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitmqMessageReceiver.class);
 
-    private List<Consumer<TransactionMessage>> consumers;
+    private List<Consumer<TransactionRecord>> consumers;
     private Connection connection;
     private String queueName;
     private TransactionMessageDeserializer deserializer;
@@ -42,7 +42,7 @@ public class RabbitmqMessageReceiver implements Producer<TransactionMessage> {
     }
 
     @Override
-    synchronized public void subscribe(Consumer<TransactionMessage> c) {
+    synchronized public void subscribe(Consumer<TransactionRecord> c) {
         consumers.add(c);
     }
 
@@ -51,9 +51,8 @@ public class RabbitmqMessageReceiver implements Producer<TransactionMessage> {
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             deserializer.deserialize(delivery.getBody()).ifPresent(msg -> {
-                for (Consumer<TransactionMessage> consumer: this.consumers) {
-                    consumer.accept(msg);
-                }
+                TransactionRecord record = msg.toTransactionRecord();
+                this.consumers.forEach(c -> c.accept(record));
             });
             
         };
