@@ -1,5 +1,5 @@
 package org.example.transaction.consumer.port;
 
-public interface TransactionMessageRepository {
+public interface TransactionRecordRepository {
     void save(TransactionRecord record);
 }

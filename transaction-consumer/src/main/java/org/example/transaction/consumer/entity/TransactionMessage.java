@@ -7,16 +7,16 @@ import java.util.UUID;
 import com.dslplatform.json.CompiledJson;
 
 import org.example.transaction.consumer.port.TransactionRecord;
-import org.example.transaction.consumer.port.TransactionRecord.PaymentCurrency;
-import org.example.transaction.consumer.port.TransactionRecord.PaymentStatus;
-import org.example.transaction.consumer.port.TransactionRecord.PaymentType;
-import org.example.transaction.consumer.port.TransactionRecord.PaymentVendor;
+import org.example.transaction.consumer.port.PaymentCurrency;
+import org.example.transaction.consumer.port.PaymentStatus;
+import org.example.transaction.consumer.port.PaymentType;
+import org.example.transaction.consumer.port.PaymentVendor;
 
 @CompiledJson
 public class TransactionMessage {
 
     private String id;
-    private String tid;
+    private String mid;
     private String uid;
     private String datetime;
     private float amount;
@@ -24,6 +24,8 @@ public class TransactionMessage {
     private String type;
     private String vendor;
     private String status;
+    private String isValid;
+    private String originPurchaseTransactionId;
 
     public TransactionMessage() {
     }
@@ -36,12 +38,12 @@ public class TransactionMessage {
         this.id = id;
     }
 
-    public String getTid() {
-        return tid;
+    public String getMid() {
+        return mid;
     }
 
-    public void setTid(String tid) {
-        this.tid = tid;
+    public void setMid(String mid) {
+        this.mid = mid;
     }
 
     public String getUid() {
@@ -100,23 +102,52 @@ public class TransactionMessage {
         this.status = status;
     }
 
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String valid) {
+        isValid = valid;
+    }
+
+    public String getOriginPurchaseTransactionId() {
+        return originPurchaseTransactionId;
+    }
+
+    public void setOriginPurchaseTransactionId(String originPurchaseTransactionId) {
+        this.originPurchaseTransactionId = originPurchaseTransactionId;
+    }
+
     @Override
     public String toString() {
-        return "TransactionMessage [amount=" + amount + ", currency=" + currency + ", datetime=" + datetime + ", id="
-                + id + ", status=" + status + ", tid=" + tid + ", type=" + type + ", uid=" + uid + ", vendor=" + vendor
-                + "]";
+        return "TransactionMessage{" +
+                "id='" + id + '\'' +
+                ", mid='" + mid + '\'' +
+                ", uid='" + uid + '\'' +
+                ", datetime='" + datetime + '\'' +
+                ", amount=" + amount +
+                ", currency='" + currency + '\'' +
+                ", type='" + type + '\'' +
+                ", vendor='" + vendor + '\'' +
+                ", status='" + status + '\'' +
+                ", isValid='" + isValid + '\'' +
+                ", originPurchaseTransactionId='" + originPurchaseTransactionId + '\'' +
+                '}';
     }
 
     public TransactionRecord toTransactionRecord() {
         return new TransactionRecord(
-            UUID.fromString(this.id), 
-            Integer.parseInt(this.tid), 
-            Long.parseLong(this.uid),
-            OffsetDateTime.parse(this.datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-            Float.valueOf(this.amount),
-            PaymentCurrency.valueOf(this.currency),
-            PaymentType.getByLabel(this.type),
-            PaymentVendor.getByLabel(this.vendor),
-            PaymentStatus.getByLabel(this.status));
+                UUID.fromString(this.id),
+                Integer.parseInt(this.mid),
+                Long.parseLong(this.uid),
+                OffsetDateTime.parse(this.datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                Float.valueOf(this.amount),
+                PaymentCurrency.valueOf(this.currency),
+                PaymentType.getByLabel(this.type),
+                PaymentVendor.getByLabel(this.vendor),
+                PaymentStatus.getByLabel(this.status),
+                Boolean.valueOf(this.isValid),
+                originPurchaseTransactionId == null ? null : UUID.fromString(originPurchaseTransactionId)
+        );
     }
 }

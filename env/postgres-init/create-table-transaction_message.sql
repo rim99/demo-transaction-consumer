@@ -22,14 +22,16 @@ CREATE TYPE PAYMENT_STATUS AS ENUM (
 
 CREATE TABLE transaction_message (
     id UUID,
-    tid NUMERIC(8),
+    mid NUMERIC(8),
     uid NUMERIC(16),
     datetime TIMESTAMP (3) WITH TIME ZONE,    
     amount NUMERIC(24, 4),
     currency PAYMENT_CURRENCY,
     type PAYMENT_TYPE,
     vendor PAYMENT_VENDOR,
-    status PAYMENT_STATUS  
+    status PAYMENT_STATUS,
+    is_valid Bool,
+    origin_purchase_transaction_id UUID
 );
 
 

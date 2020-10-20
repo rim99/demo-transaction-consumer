@@ -7,8 +7,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
 import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
-import org.example.transaction.consumer.adapter.TransactionMessagePostgresRepository;
-import org.example.transaction.consumer.service.TransactionMessageConsumeService;
+import org.example.transaction.consumer.adapter.TransactionRecordPostgresRepository;
+import org.example.transaction.consumer.service.TransactionRecordConsumeService;
 
 import io.helidon.config.Config;
 import io.helidon.dbclient.DbClient;
@@ -55,8 +55,8 @@ public final class Main {
             rabbitMQConfig.get("password").asString().get(),
             rabbitMQConfig.get("queueName").asString().get()
         );
-        r.subscribe(new TransactionMessageConsumeService(
-            new TransactionMessagePostgresRepository(dbClient)
+        r.subscribe(new TransactionRecordConsumeService(
+            new TransactionRecordPostgresRepository(dbClient)
         ));
         LoggerFactory.getLogger("Main").info("started");
         r.start();
