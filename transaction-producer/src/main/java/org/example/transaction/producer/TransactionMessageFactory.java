@@ -9,14 +9,16 @@ public class TransactionMessageFactory {
        return () -> {
             var t = new TransactionMessage();
             t.setId(UUID.randomUUID().toString());
-            t.setTid("01890432");
+            t.setMid("01890432");
             t.setUid("0088723951648203");
             t.setDatetime("2020-01-01T13:26:54.281+08:00");
             t.setAmount(12.35f);
             t.setCurrency("JPY");
-            t.setType("purchase");
+            t.setType("refund");
             t.setVendor("wechat-pay");
             t.setStatus("success");
+            t.setIsValid(Boolean.TRUE.toString());
+            t.setOriginPurchaseTransactionId(UUID.randomUUID().toString());
             return t;
         };
     }

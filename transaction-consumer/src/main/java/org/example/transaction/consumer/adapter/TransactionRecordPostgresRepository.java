@@ -17,15 +17,16 @@ public class TransactionRecordPostgresRepository implements TransactionRecordRep
     public void save(TransactionRecord record) {
         pgClient.execute(exec -> exec
             .createInsert("INSERT INTO transaction_message VALUES (" 
-                + " :id , :tid , :uid , :datetime , :amount , "    
+                + " :id , :mid , :uid , :datetime , :amount , "    
                 + " CAST( :currency AS PAYMENT_CURRENCY) ," 
                 + " CAST( :type AS PAYMENT_TYPE) ," 
                 + " CAST( :vendor AS PAYMENT_VENDOR) ," 
-                + " CAST( :status AS PAYMENT_STATUS) "  
+                + " CAST( :status AS PAYMENT_STATUS) ,"  
+                + " :isValid , :originPurchaseTransactionId "
                 + ")"
             )
             .addParam("id", record.getId())     
-            .addParam("tid", record.getTid())     
+            .addParam("mid", record.getMid())
             .addParam("uid", record.getUid())
             .addParam("datetime", record.getDatetime())    
             .addParam("amount", record.getAmount())
@@ -33,6 +34,8 @@ public class TransactionRecordPostgresRepository implements TransactionRecordRep
             .addParam("type", record.getType().getLabel())   
             .addParam("vendor", record.getVendor().getLabel())  
             .addParam("status", record.getStatus().getLabel())  
+            .addParam("isValid", record.getValid().orElse(null))
+            .addParam("originPurchaseTransactionId", record.getOriginPurchaseTransactionId().orElse(null))
             .execute()
         )
         .thenAccept(c -> System.out.println("inserted " + c + " records"))
