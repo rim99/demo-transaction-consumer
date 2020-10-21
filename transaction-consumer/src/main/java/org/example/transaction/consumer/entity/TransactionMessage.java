@@ -19,7 +19,7 @@ public class TransactionMessage {
     private String mid;
     private String uid;
     private String datetime;
-    private float amount;
+    private double amount;
     private String currency;
     private String type;
     private String vendor;
@@ -62,11 +62,11 @@ public class TransactionMessage {
         this.datetime = datetime;
     }
 
-    public float getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
@@ -141,7 +141,7 @@ public class TransactionMessage {
                 Integer.parseInt(this.mid),
                 Long.parseLong(this.uid),
                 OffsetDateTime.parse(this.datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                Float.valueOf(this.amount),
+                this.amount,
                 PaymentCurrency.valueOf(this.currency),
                 PaymentType.getByLabel(this.type),
                 PaymentVendor.getByLabel(this.vendor),
