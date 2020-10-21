@@ -6,6 +6,10 @@ import org.example.transaction.consumer.port.*;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.time.temporal.ChronoField.*;
 
@@ -47,7 +51,7 @@ class Helper {
 
     static String getKeyForPurchase(PaymentVendor vendor,
                                     OffsetDateTime datetime, AggregationTimeFrame timeFrame,
-                                    TransactionAggregationRepository.AggregationType type) {
+                                    AggregationType type) {
         return PaymentType.PURCHASE.toString() +
                 "_" +
                 vendor.getLabel() +
@@ -61,7 +65,7 @@ class Helper {
 
     static String getKeyForPurchase(Merchant merchant,
                                     OffsetDateTime datetime, AggregationTimeFrame timeFrame,
-                                    TransactionAggregationRepository.AggregationType type) {
+                                    AggregationType type) {
         return PaymentType.PURCHASE.toString() +
                 "_" +
                 merchant.getLabel() +
@@ -75,7 +79,7 @@ class Helper {
 
     static String getKeyForRefund(PaymentVendor vendor, Boolean isValid,
                                   OffsetDateTime datetime, AggregationTimeFrame timeFrame,
-                                  TransactionAggregationRepository.AggregationType type) {
+                                  AggregationType type) {
         return PaymentType.REFUND.toString() +
                 "_" +
                 (isValid ? "valid" : "invalid") +
@@ -91,7 +95,7 @@ class Helper {
 
     static String getKeyForRefund(Merchant merchant, Boolean isValid,
                                   OffsetDateTime datetime, AggregationTimeFrame timeFrame,
-                                  TransactionAggregationRepository.AggregationType type) {
+                                  AggregationType type) {
         return PaymentType.REFUND.toString() +
                 "_" +
                 (isValid ? "valid" : "invalid") +
@@ -106,7 +110,7 @@ class Helper {
     }
 
     static String getKey(PaymentType paymentType, OffsetDateTime datetime, AggregationTimeFrame timeFrame,
-                         TransactionAggregationRepository.AggregationType aggregationType) {
+                         AggregationType aggregationType) {
         return paymentType.toString() +
                 "_" +
                 getTime(datetime, timeFrame) +
@@ -131,5 +135,24 @@ class Helper {
         }
 
         return df.format(datetime);
+    }
+
+    public static String getRequiredParam(String name, Map<String, List<String>> params, List<String> missingParams) {
+        List<String> tmpList = params.get(name);
+        if (Objects.isNull(tmpList) || tmpList.size() == 0) {
+            missingParams.add(name);
+            return null;
+        } else {
+            return tmpList.get(0);
+        }
+    }
+
+    public static Optional<String> getOptionalParam(String name, Map<String, List<String>> params) {
+        List<String> tmpList = params.get(name);
+        if (Objects.isNull(tmpList) || tmpList.size() == 0) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(tmpList.get(0));
+        }
     }
 }
