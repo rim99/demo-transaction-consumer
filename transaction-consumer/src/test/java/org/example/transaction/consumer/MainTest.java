@@ -31,7 +31,7 @@ public class MainTest {
 
     @BeforeAll
     public static void startTheServer() throws Exception {
-        webServer = Main.startServer(Config.create());
+        webServer = Main.startServer(Config.create()).get();
 
         long timeout = 2000; // 2 seconds should be enough to start the server
         long now = System.currentTimeMillis();

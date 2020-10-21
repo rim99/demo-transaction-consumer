@@ -38,7 +38,6 @@ public class TransactionRecordPostgresRepository implements TransactionRecordRep
             .addParam("originPurchaseTransactionId", record.getOriginPurchaseTransactionId().orElse(null))
             .execute()
         )
-        .thenAccept(c -> System.out.println("inserted " + c + " records"))
-        .exceptionallyAccept(t -> t.printStackTrace());
+        .exceptionallyAccept(Throwable::printStackTrace);
     }
 }

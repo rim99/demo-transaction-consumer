@@ -8,11 +8,14 @@ import java.util.*;
 public class TransactionAggregationHttpServiceImpl implements TransactionAggregationHttpService {
 
     @Override
-    public List<AggregationItem> getAggregations(LocalDateTime from, LocalDateTime to,
-                                 AggregationTimeFrame timeframe, AggregationType type,
-                                 Optional<Merchant> merchant, Optional<PaymentType> transactionType,
-                                 Optional<PaymentVendor> vendor) {
-
+    public List<AggregationItem> getAggregations(LocalDateTime from,
+                                                 LocalDateTime to,
+                                                 AggregationTimeFrame timeframe,
+                                                 AggregationType type,
+                                                 Optional<Merchant> merchant,
+                                                 Optional<PaymentType> transactionType,
+                                                 Optional<PaymentVendor> vendor
+    ) {
         return new ArrayList<>(){{
             add(new AggregationItem("20200808T0516", 123.59D));
         }};
