@@ -1,8 +1,12 @@
 package org.example.transaction.consumer.adapter.redis;
 
+import org.example.transaction.consumer.port.AggregationItem;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RedisStorage {
 
@@ -34,6 +38,21 @@ public class RedisStorage {
             System.out.println("Error when add one for " + index + ", detail: " + e);
         }
         return i;
+    }
+
+    public Set<AggregationItem> getAll(RedisZsetIndex start, RedisZsetIndex stop) {
+        Set<AggregationItem> result = null;
+        try (Jedis jedis = pool.getResource()) {
+            Set<String> keys = jedis.zrangeByScore(start.getZsetName(), start.getScore(), stop.getScore());
+            result = keys.stream().map(k -> {
+                String stamp = k.contains("_") ? k.split("_")[1] : k;
+                Double value = Double.valueOf(jedis.get(start.getZsetName()+k));
+                return new AggregationItem(stamp, value);
+            }).collect(Collectors.toSet());
+        } catch (Exception e) {
+            System.out.println("Error when get aggregation summaries from " + start + " to " + stop + ", detail: " + e);
+        }
+        return result;
     }
 
     public static class Builder {

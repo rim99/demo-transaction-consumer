@@ -7,6 +7,14 @@ import java.util.*;
 
 public class TransactionAggregationHttpServiceImpl implements TransactionAggregationHttpService {
 
+    private TransactionAggregationRepository transactionAggregationRepository;
+
+    public TransactionAggregationHttpServiceImpl(
+            TransactionAggregationRepository transactionAggregationRepository
+    ) {
+        this.transactionAggregationRepository = transactionAggregationRepository;
+    }
+
     @Override
     public List<AggregationItem> getAggregations(LocalDateTime from,
                                                  LocalDateTime to,
@@ -16,8 +24,7 @@ public class TransactionAggregationHttpServiceImpl implements TransactionAggrega
                                                  Optional<PaymentType> transactionType,
                                                  Optional<PaymentVendor> vendor
     ) {
-        return new ArrayList<>(){{
-            add(new AggregationItem("20200808T0516", 123.59D));
-        }};
+        return this.transactionAggregationRepository.retrieveAggregations(
+                from, to, timeframe, type, merchant, transactionType, vendor);
     }
 }

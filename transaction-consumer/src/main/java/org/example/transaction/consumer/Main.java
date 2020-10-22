@@ -92,9 +92,10 @@ public final class Main {
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
+        RedisStorage redisStorage = RedisStorage.Builder.build();
         TransactionAggregationHttpAPI transactionAggregationHttpAPI =
                 new TransactionAggregationHttpAPI(
-                        new TransactionAggregationHttpServiceImpl(),
+                        new TransactionAggregationHttpServiceImpl(new TransactionAggregationRepositoryImpl(redisStorage)),
                         new AggregationItemListSerializer()
                 );
 
