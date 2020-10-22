@@ -1,12 +1,9 @@
 package org.example.transaction.consumer.port;
 
-import com.dslplatform.json.CompiledJson;
-
-@CompiledJson
 public class AggregationItem implements Comparable<AggregationItem> {
 
-    String timestamp;
-    Double value;
+    private String timestamp;
+    private Double value;
 
     public AggregationItem(String timestamp, Double value) {
         this.timestamp = timestamp;

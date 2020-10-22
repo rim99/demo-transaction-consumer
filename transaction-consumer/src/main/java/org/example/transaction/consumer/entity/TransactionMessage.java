@@ -1,13 +1,11 @@
 package org.example.transaction.consumer.entity;
 
-import com.dslplatform.json.CompiledJson;
 import org.example.transaction.consumer.port.*;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-@CompiledJson
 public class TransactionMessage {
 
     private String id;
