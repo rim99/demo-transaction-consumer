@@ -4,8 +4,6 @@ import com.rabbitmq.client.*;
 import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
 import org.example.transaction.consumer.port.Producer;
 import org.example.transaction.consumer.port.TransactionRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -14,8 +12,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
-
-    private static final Logger logger = LoggerFactory.getLogger(RabbitmqMessageReceiver.class);
 
     private List<Consumer<TransactionRecord>> consumers;
     private Connection connection;
@@ -48,7 +44,7 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
             });
         };
         CancelCallback cancelCallback = consumerTag -> {
-            logger.error(" [x] Consumer " + consumerTag + " is cancelled'");
+            System.out.println(" [x] Consumer " + consumerTag + " is cancelled'");
         };
         channel.basicConsume(this.queueName, true, deliverCallback, cancelCallback);
     }

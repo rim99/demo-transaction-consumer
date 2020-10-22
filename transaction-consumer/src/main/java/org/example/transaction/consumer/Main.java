@@ -1,4 +1,3 @@
-
 package org.example.transaction.consumer;
 
 import io.helidon.common.reactive.Single;
@@ -52,16 +51,9 @@ public final class Main {
         r.start();
     }
 
-    /**
-     * Start the server.
-     * @return the created {@link WebServer} instance
-     * @throws IOException if there are problems reading logging properties
-     */
     static Single<WebServer> startServer(Config config) throws IOException {
-        // load logging configuration
         setupLogging();
 
-        // Build server with JSONP support
         WebServer server = WebServer.builder(createRouting(config))
                 .config(config.get("server"))
                 .addMediaSupport(JsonpSupport.create())
@@ -69,12 +61,6 @@ public final class Main {
         return server.start();
     }
 
-    /**
-     * Creates new {@link Routing}.
-     *
-     * @return routing configured with JSON support, a health check, and a service
-     * @param config configuration of this server
-     */
     private static Routing createRouting(Config config) {
         MetricsSupport metrics = MetricsSupport.create();
         HealthSupport health = HealthSupport.builder()
@@ -88,9 +74,6 @@ public final class Main {
                 .build();
     }
 
-    /**
-     * Configure logging from logging.properties file.
-     */
     private static void setupLogging() throws IOException {
         try (InputStream is = Main.class.getResourceAsStream("/logging.properties")) {
             LogManager.getLogManager().readConfiguration(is);

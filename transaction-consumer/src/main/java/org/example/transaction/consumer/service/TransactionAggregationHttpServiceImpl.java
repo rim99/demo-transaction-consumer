@@ -12,9 +12,7 @@ public class TransactionAggregationHttpServiceImpl implements TransactionAggrega
     private TransactionAggregationRepository transactionAggregationRepository;
 
     @Inject
-    public TransactionAggregationHttpServiceImpl(
-            TransactionAggregationRepository transactionAggregationRepository
-    ) {
+    public TransactionAggregationHttpServiceImpl(TransactionAggregationRepository transactionAggregationRepository) {
         this.transactionAggregationRepository = transactionAggregationRepository;
     }
 

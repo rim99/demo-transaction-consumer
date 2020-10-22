@@ -14,6 +14,33 @@
     <version>1.0-SNAPSHOT</version>
     <name>transaction-consumer</name>
 
+    <repositories>
+        <repository>
+            <id>huaweicloud</id>
+            <name>Central Repository</name>
+            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>netease</id>
+            <name>Central Repository</name>
+            <url>http://mirrors.163.com/maven/repository/maven-public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <properties>
         <mainClass>org.example.transaction.consumer.Main</mainClass>
         <dagger.version>2.29.1</dagger.version>
@@ -21,7 +48,6 @@
         <postgres.version>42.2.16</postgres.version>
         <jedis.version>2.9.0</jedis.version>
         <jackson.version>2.11.3</jackson.version>
-        <log4j.version>2.13.3</log4j.version>
     </properties>
 
     <dependencies>
@@ -81,21 +107,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
 
         <!-- for test -->
