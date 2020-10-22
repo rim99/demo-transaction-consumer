@@ -1,14 +1,18 @@
 package org.example.transaction.consumer.adapter;
 
-import org.example.transaction.consumer.port.TransactionRecordRepository;
-import org.example.transaction.consumer.port.TransactionRecord;
-
 import io.helidon.dbclient.DbClient;
+import org.example.transaction.consumer.port.TransactionRecord;
+import org.example.transaction.consumer.port.TransactionRecordRepository;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class TransactionRecordPostgresRepository implements TransactionRecordRepository {
 
     private DbClient pgClient;
 
+    @Inject
     public TransactionRecordPostgresRepository(DbClient pgClient) {
         this.pgClient = pgClient;
     }

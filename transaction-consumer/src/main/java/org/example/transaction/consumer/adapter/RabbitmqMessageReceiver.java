@@ -1,22 +1,17 @@
 package org.example.transaction.consumer.adapter;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-
-import com.rabbitmq.client.CancelCallback;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
-
+import com.rabbitmq.client.*;
 import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
 import org.example.transaction.consumer.port.Producer;
 import org.example.transaction.consumer.port.TransactionRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
 
@@ -25,13 +20,11 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
     private List<Consumer<TransactionRecord>> consumers;
     private Connection connection;
     private String queueName;
-    private TransactionMessageDeserializer deserializer;
 
     private RabbitmqMessageReceiver(Connection connection, String queueName) throws IOException {
         this.consumers = new LinkedList<>();
         this.connection = connection;
         this.queueName = queueName;
-        this.deserializer = new TransactionMessageDeserializer();
     }
 
     public void start() throws IOException {
@@ -48,13 +41,11 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
 
     private void recv() throws IOException {
         Channel channel = connection.createChannel();
-
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            deserializer.deserialize(delivery.getBody()).ifPresent(msg -> {
+            TransactionMessageDeserializer.get().deserialize(delivery.getBody()).ifPresent(msg -> {
                 TransactionRecord record = msg.toTransactionRecord();
                 this.consumers.forEach(c -> c.accept(record));
             });
-            
         };
         CancelCallback cancelCallback = consumerTag -> {
             logger.error(" [x] Consumer " + consumerTag + " is cancelled'");

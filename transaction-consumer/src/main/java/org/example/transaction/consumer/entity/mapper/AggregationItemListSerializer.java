@@ -9,8 +9,21 @@ import java.util.List;
 
 public class AggregationItemListSerializer {
 
-    private final DslJson<AggregationItem> json = new DslJson<>();
-    private ThreadLocal<JsonWriter> writer = ThreadLocal.withInitial(json::newWriter);
+    private static class Singleton {
+        static AggregationItemListSerializer instance = new AggregationItemListSerializer();
+    }
+
+    public static AggregationItemListSerializer get() {
+        return Singleton.instance;
+    }
+
+    private final DslJson<AggregationItem> json;
+    private ThreadLocal<JsonWriter> writer;
+
+    AggregationItemListSerializer() {
+        json = new DslJson<>();
+        writer = ThreadLocal.withInitial(json::newWriter);
+    }
 
     public byte[] serialize(List<AggregationItem> data) {
         if (data == null) return null;

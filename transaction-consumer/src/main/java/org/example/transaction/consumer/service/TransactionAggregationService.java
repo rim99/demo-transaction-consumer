@@ -2,10 +2,13 @@ package org.example.transaction.consumer.service;
 
 import org.example.transaction.consumer.port.*;
 
+import javax.inject.Inject;
+
 public class TransactionAggregationService {
 
     private TransactionAggregationRepository transactionAggregationRepository;
 
+    @Inject
     public TransactionAggregationService(TransactionAggregationRepository transactionAggregationRepository) {
         this.transactionAggregationRepository = transactionAggregationRepository;
     }

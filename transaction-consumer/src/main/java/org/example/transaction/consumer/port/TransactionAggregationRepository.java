@@ -1,10 +1,12 @@
 package org.example.transaction.consumer.port;
 
+import javax.inject.Singleton;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Singleton
 public interface TransactionAggregationRepository {
 	void updatePurchaseAmount(PaymentVendor vendor, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe);
 	void updatePurchaseAmount(Merchant Merchant, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe);

@@ -2,13 +2,16 @@ package org.example.transaction.consumer.service;
 
 import org.example.transaction.consumer.port.*;
 
+import javax.inject.Inject;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class TransactionAggregationHttpServiceImpl implements TransactionAggregationHttpService {
 
     private TransactionAggregationRepository transactionAggregationRepository;
 
+    @Inject
     public TransactionAggregationHttpServiceImpl(
             TransactionAggregationRepository transactionAggregationRepository
     ) {

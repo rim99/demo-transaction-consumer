@@ -4,6 +4,7 @@ import org.example.transaction.consumer.adapter.redis.RedisStorage;
 import org.example.transaction.consumer.adapter.redis.RedisZsetIndex;
 import org.example.transaction.consumer.port.*;
 
+import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -13,6 +14,7 @@ public class TransactionAggregationRepositoryImpl implements TransactionAggregat
 
     private RedisStorage redisStorage;
 
+    @Inject
     public TransactionAggregationRepositoryImpl(RedisStorage redisStorage) {
         this.redisStorage = redisStorage;
     }
