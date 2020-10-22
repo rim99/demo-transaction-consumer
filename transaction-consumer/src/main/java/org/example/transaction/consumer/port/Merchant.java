@@ -11,8 +11,4 @@ public class Merchant {
     public Integer getId() {
         return id;
     }
-
-    public String getLabel() {
-        return "Merchant-" + id;
-    }
 }

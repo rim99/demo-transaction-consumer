@@ -1,8 +1,6 @@
 package org.example.transaction.consumer.entity.mapper;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import com.dslplatform.json.DslJson;
