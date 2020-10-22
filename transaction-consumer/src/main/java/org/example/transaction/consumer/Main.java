@@ -11,6 +11,7 @@ import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
 import org.example.transaction.consumer.adapter.*;
+import org.example.transaction.consumer.adapter.redis.RedisStorage;
 import org.example.transaction.consumer.entity.mapper.AggregationItemListSerializer;
 import org.example.transaction.consumer.service.TransactionAggregationHttpServiceImpl;
 import org.example.transaction.consumer.service.TransactionAggregationService;

@@ -1,4 +1,4 @@
-package org.example.transaction.consumer.adapter;
+package org.example.transaction.consumer.adapter.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -12,22 +12,26 @@ public class RedisStorage {
         this.pool = pool;
     }
 
-    public double add(String key, double amount) {
+    public double add(RedisZsetIndex index, double amount) {
         double added = 0D;
         try (Jedis jedis = pool.getResource()) {
+            jedis.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            String key = index.getZsetName() + index.getMemberName();
             added = jedis.incrByFloat(key, amount);
         } catch (Exception e) {
-            System.out.println("Error when add amount [" + amount + "] for key [" + key + "], detail: " + e);
+            System.out.println("Error when add amount [" + amount + "] for " + index + ", detail: " + e);
         }
         return added;
     }
 
-    public long addOne(String key) {
+    public double addOne(RedisZsetIndex index) {
         long i = 0L;
         try (Jedis jedis = pool.getResource()) {
+            jedis.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            String key = index.getZsetName() + index.getMemberName();
             i = jedis.incr(key);
         } catch (Exception e) {
-            System.out.println("Error when add one for key [" + key + "], detail: " + e);
+            System.out.println("Error when add one for " + index + ", detail: " + e);
         }
         return i;
     }
