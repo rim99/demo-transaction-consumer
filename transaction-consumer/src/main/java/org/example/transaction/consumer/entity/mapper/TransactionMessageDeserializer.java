@@ -1,28 +1,36 @@
 package org.example.transaction.consumer.entity.mapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import org.example.transaction.consumer.entity.TransactionMessage;
+
 import java.io.IOException;
 import java.util.Optional;
 
-import com.dslplatform.json.DslJson;
-
-import org.example.transaction.consumer.entity.TransactionMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TransactionMessageDeserializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TransactionMessageDeserializer.class);
+    private static class Singleton {
+        static TransactionMessageDeserializer instance = new TransactionMessageDeserializer();
+    }
 
-    private final DslJson<TransactionMessage> json = new DslJson<>();
+    public static TransactionMessageDeserializer get() {
+        return Singleton.instance;
+    }
+
+    private ObjectReader reader;
+
+    TransactionMessageDeserializer() {
+        reader = new ObjectMapper().reader();
+    }
 
     public Optional<TransactionMessage> deserialize(final byte[] data) {
-        try {
-            if (data != null) {
+        if (data != null) {
+            try {
                 return Optional.ofNullable(
-                    json.deserialize(TransactionMessage.class, data, data.length));
-            } 
-        } catch (IOException e) {
-            logger.error("Error when deserialize TransactionMessage");
+                        reader.readValue(data, TransactionMessage.class));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return Optional.empty();
     }

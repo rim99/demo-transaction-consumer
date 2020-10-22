@@ -3,6 +3,7 @@ package org.example.transaction.consumer.service;
 import org.example.transaction.consumer.port.TransactionRecord;
 import org.example.transaction.consumer.port.TransactionRecordRepository;
 
+import javax.inject.Inject;
 import java.util.function.Consumer;
 
 public class TransactionRecordConsumeService implements Consumer<TransactionRecord> {
@@ -10,6 +11,7 @@ public class TransactionRecordConsumeService implements Consumer<TransactionReco
     private TransactionRecordRepository transactionMessageRepository;
     private TransactionAggregationService transactionAggregationService;
 
+    @Inject
     public TransactionRecordConsumeService(
             TransactionRecordRepository transactionMessageRepository,
             TransactionAggregationService transactionAggregationService

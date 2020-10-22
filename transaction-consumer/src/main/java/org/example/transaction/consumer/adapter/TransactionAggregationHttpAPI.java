@@ -7,9 +7,10 @@ import io.helidon.webserver.ServerRequest;
 import io.helidon.webserver.ServerResponse;
 import io.helidon.webserver.Service;
 import org.example.transaction.consumer.entity.mapper.AggregationItemListSerializer;
-import org.example.transaction.consumer.port.AggregationItem;
 import org.example.transaction.consumer.port.*;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.json.Json;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
@@ -20,6 +21,7 @@ import java.util.*;
 
 import static java.time.temporal.ChronoField.*;
 
+@Singleton
 public class TransactionAggregationHttpAPI implements Service {
 
     private static final JsonBuilderFactory JSON = Json.createBuilderFactory(Collections.emptyMap());
@@ -35,14 +37,12 @@ public class TransactionAggregationHttpAPI implements Service {
             .toFormatter();
 
     private final TransactionAggregationHttpService transactionAggregationHttpService;
-    private final AggregationItemListSerializer aggregationItemListSerializer;
 
+    @Inject
     public TransactionAggregationHttpAPI(
-            TransactionAggregationHttpService service,
-            AggregationItemListSerializer aggregationItemListSerializer
+            TransactionAggregationHttpService service
     ) {
         this.transactionAggregationHttpService = service;
-        this.aggregationItemListSerializer = aggregationItemListSerializer;
     }
 
     private void getAggregationHandler(ServerRequest serverRequest, ServerResponse serverResponse) {
@@ -82,7 +82,7 @@ public class TransactionAggregationHttpAPI implements Service {
         List<AggregationItem> aggregations = transactionAggregationHttpService
                 .getAggregations(from, to, timeframe, type, merchant, transactionType, vendor);
 
-        byte[] body = aggregationItemListSerializer.serialize(aggregations);
+        byte[] body = AggregationItemListSerializer.get().serialize(aggregations);
         serverResponse
                 .status(Http.ResponseStatus.create(200))
                 .send(body);

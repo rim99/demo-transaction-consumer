@@ -3,19 +3,14 @@ package org.example.transaction.consumer;
 
 import io.helidon.common.reactive.Single;
 import io.helidon.config.Config;
-import io.helidon.dbclient.DbClient;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonp.JsonpSupport;
 import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
-import org.example.transaction.consumer.adapter.*;
-import org.example.transaction.consumer.adapter.redis.RedisStorage;
-import org.example.transaction.consumer.entity.mapper.AggregationItemListSerializer;
-import org.example.transaction.consumer.service.TransactionAggregationHttpServiceImpl;
-import org.example.transaction.consumer.service.TransactionAggregationService;
-import org.example.transaction.consumer.service.TransactionRecordConsumeService;
+import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
+import org.example.transaction.consumer.config.DaggerModule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,20 +42,13 @@ public final class Main {
 
     static void startMessageReceiver(Config config) throws IOException, TimeoutException {
         Config rabbitMQConfig = config.get("rabbitmq");
-        Config dbConfig = config.get("db");
-
-        DbClient dbClient = DbClient.builder(dbConfig).build();
-        RedisStorage redisStorage = RedisStorage.Builder.build();
         RabbitmqMessageReceiver r = RabbitmqMessageReceiver.Builder.build(
                 rabbitMQConfig.get("host").asString().get(),
                 rabbitMQConfig.get("username").asString().get(),
                 rabbitMQConfig.get("password").asString().get(),
                 rabbitMQConfig.get("queueName").asString().get()
         );
-        r.subscribe(new TransactionRecordConsumeService(
-                new TransactionRecordPostgresRepository(dbClient),
-                new TransactionAggregationService(new TransactionAggregationRepositoryImpl(redisStorage))
-        ));
+        r.subscribe(DaggerModule.create().transactionRecordConsumeService());
         r.start();
     }
 
@@ -92,17 +80,11 @@ public final class Main {
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
-        RedisStorage redisStorage = RedisStorage.Builder.build();
-        TransactionAggregationHttpAPI transactionAggregationHttpAPI =
-                new TransactionAggregationHttpAPI(
-                        new TransactionAggregationHttpServiceImpl(new TransactionAggregationRepositoryImpl(redisStorage)),
-                        new AggregationItemListSerializer()
-                );
-
         return Routing.builder()
                 .register(health)                   // Health at "/health"
                 .register(metrics)                  // Metrics at "/metrics"
-                .register("/transaction-aggregations", transactionAggregationHttpAPI)
+                .register("/transaction-aggregations",
+                        DaggerModule.create().transactionAggregationHttpAPI())
                 .build();
     }
 

@@ -5,9 +5,11 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import javax.inject.Singleton;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Singleton
 public class RedisStorage {
 
     private JedisPool pool;

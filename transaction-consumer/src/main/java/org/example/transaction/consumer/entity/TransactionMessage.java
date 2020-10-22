@@ -1,18 +1,11 @@
 package org.example.transaction.consumer.entity;
 
+import org.example.transaction.consumer.port.*;
+
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import com.dslplatform.json.CompiledJson;
-
-import org.example.transaction.consumer.port.TransactionRecord;
-import org.example.transaction.consumer.port.PaymentCurrency;
-import org.example.transaction.consumer.port.PaymentStatus;
-import org.example.transaction.consumer.port.PaymentType;
-import org.example.transaction.consumer.port.PaymentVendor;
-
-@CompiledJson
 public class TransactionMessage {
 
     private String id;
