@@ -15,10 +15,9 @@ RUN mvn package -Pnative-image -Dnative.image.skip -Dmaven.test.skip -Declipseli
 ADD src src
 RUN mvn package -Pnative-image -Dnative.image.buildStatic -DskipTests
 
-RUN echo "done!"
-
 # 2nd stage, build the runtime image
-FROM scratch
+# FROM scratch
+FROM debian:bullseye-20201012-slim
 WORKDIR /helidon
 
 # Copy the binary built in the 1st stage
