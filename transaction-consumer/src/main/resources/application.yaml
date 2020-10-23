@@ -21,3 +21,7 @@ rabbitmq:
   username: user
   password: passwd
   queueName: transaction_msg
+
+redis:
+  host: redis
+  port: 6379

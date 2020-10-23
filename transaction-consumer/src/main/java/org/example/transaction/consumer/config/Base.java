@@ -25,7 +25,10 @@ abstract class Base {
 
     @Provides @Singleton
     static RedisStorage redisStorage() {
-        return RedisStorage.Builder.build();
+        Config redisConfig = Config.create().get("redis");
+        String host = redisConfig.get("host").asString().get();
+        Integer port = redisConfig.get("port").asInt().get();
+        return RedisStorage.Builder.build(host, port);
     }
 
     @Binds

@@ -1,29 +1,33 @@
 package org.example.transaction.consumer.adapter.redis;
 
+import io.lettuce.core.Range;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
 import org.example.transaction.consumer.port.AggregationItem;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
 public class RedisStorage {
 
-    private JedisPool pool;
+    private StatefulRedisConnection<String, String> connection;
 
-    private RedisStorage(JedisPool pool) {
-        this.pool = pool;
+    private RedisStorage(StatefulRedisConnection<String, String> connection) {
+        this.connection = connection;
     }
 
     public double add(RedisZsetIndex index, double amount) {
         double added = 0D;
-        try (Jedis jedis = pool.getResource()) {
-            jedis.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+        try {
+            RedisCommands<String, String> syncCommands = connection.sync();
+            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
             String key = index.getZsetName() + index.getMemberName();
-            added = jedis.incrByFloat(key, amount);
+            added = syncCommands.incrbyfloat(key, amount);
         } catch (Exception e) {
             System.out.println("Error when add amount [" + amount + "] for " + index + ", detail: " + e);
         }
@@ -32,10 +36,11 @@ public class RedisStorage {
 
     public double addOne(RedisZsetIndex index) {
         long i = 0L;
-        try (Jedis jedis = pool.getResource()) {
-            jedis.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+        try {
+            RedisCommands<String, String> syncCommands = connection.sync();
+            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
             String key = index.getZsetName() + index.getMemberName();
-            i = jedis.incr(key);
+            i = syncCommands.incr(key);
         } catch (Exception e) {
             System.out.println("Error when add one for " + index + ", detail: " + e);
         }
@@ -44,11 +49,13 @@ public class RedisStorage {
 
     public Set<AggregationItem> getAll(RedisZsetIndex start, RedisZsetIndex stop) {
         Set<AggregationItem> result = null;
-        try (Jedis jedis = pool.getResource()) {
-            Set<String> keys = jedis.zrangeByScore(start.getZsetName(), start.getScore(), stop.getScore());
+        try {
+            RedisCommands<String, String> syncCommands = connection.sync();
+            Range<Double> range = Range.create(start.getScore(), stop.getScore());
+            List<String> keys = syncCommands.zrangebyscore(start.getZsetName(), range);
             result = keys.stream().map(k -> {
                 String stamp = k.contains("_") ? k.split("_")[1] : k;
-                Double value = Double.valueOf(jedis.get(start.getZsetName()+k));
+                Double value = Double.valueOf(syncCommands.get(start.getZsetName()+k));
                 return new AggregationItem(stamp, value);
             }).collect(Collectors.toSet());
         } catch (Exception e) {
@@ -58,10 +65,14 @@ public class RedisStorage {
     }
 
     public static class Builder {
-        public static RedisStorage build() {
-            JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
-            Runtime.getRuntime().addShutdownHook(new Thread(pool::close));
-            return new RedisStorage(pool);
+        public static RedisStorage build(String host, Integer port) {
+            RedisClient client = RedisClient.create(RedisURI.create(host, port));
+            StatefulRedisConnection<String, String> connection = client.connect();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                connection.close();
+                client.shutdown();
+            }));
+            return new RedisStorage(connection);
         }
     }
 }

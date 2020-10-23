@@ -24,29 +24,32 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>netease</id>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>huaweicloud</id>
             <name>Central Repository</name>
-            <url>http://mirrors.163.com/maven/repository/maven-public/</url>
+            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
-        </repository>
-    </repositories>
+        </pluginRepository>
+    </pluginRepositories>
+
 
     <properties>
         <mainClass>org.example.transaction.consumer.Main</mainClass>
         <dagger.version>2.29.1</dagger.version>
         <rabbitmq.version>5.9.0</rabbitmq.version>
         <postgres.version>42.2.16</postgres.version>
-        <jedis.version>2.9.0</jedis.version>
+        <lettuce.version>6.0.0.RELEASE</lettuce.version>
         <jackson.version>2.11.3</jackson.version>
     </properties>
 
@@ -99,9 +102,9 @@
             <version>${rabbitmq.version}</version>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>${jedis.version}</version>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>${lettuce.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
