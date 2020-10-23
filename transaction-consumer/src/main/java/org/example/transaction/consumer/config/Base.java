@@ -1,16 +1,12 @@
 package org.example.transaction.consumer.config;
 
 import dagger.Binds;
-import dagger.Lazy;
 import dagger.Provides;
 import io.helidon.config.Config;
 import io.helidon.dbclient.DbClient;
-import org.apache.logging.log4j.core.pattern.AbstractStyleNameConverter;
 import org.example.transaction.consumer.adapter.TransactionAggregationRepositoryImpl;
 import org.example.transaction.consumer.adapter.TransactionRecordPostgresRepository;
 import org.example.transaction.consumer.adapter.redis.RedisStorage;
-import org.example.transaction.consumer.entity.mapper.AggregationItemListSerializer;
-import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
 import org.example.transaction.consumer.port.TransactionAggregationHttpService;
 import org.example.transaction.consumer.port.TransactionAggregationRepository;
 import org.example.transaction.consumer.port.TransactionRecordRepository;
@@ -29,7 +25,10 @@ abstract class Base {
 
     @Provides @Singleton
     static RedisStorage redisStorage() {
-        return RedisStorage.Builder.build();
+        Config redisConfig = Config.create().get("redis");
+        String host = redisConfig.get("host").asString().get();
+        Integer port = redisConfig.get("port").asInt().get();
+        return RedisStorage.Builder.build(host, port);
     }
 
     @Binds
