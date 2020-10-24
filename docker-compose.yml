@@ -1,5 +1,24 @@
 version: '3'
 services:
+  prometheus:
+    image: prom/prometheus:v2.22.0
+    networks:
+      - network_transaction_conusmer
+    volumes: 
+      - ./env/prometheus-config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:7.2.2
+    networks:
+      - network_transaction_conusmer
+    volumes: 
+      - ./env/grafana-dashboard/:/var/lib/grafana
+    ports:
+      - 3000:3000
+
   rabbitmq:
     image: rabbitmq:3.8.9-management-alpine
     networks:
@@ -39,33 +58,56 @@ services:
     ports:
         - 5432:5432  
 
-  consumer-native:
-    build: 
-      context: transaction-consumer/
-      dockerfile: Dockerfile.native
-      args: 
-        MAVEN_OPTS: -Djava.net.preferIPv4Stack=true
-    volumes: 
-      - mvn-repo:/usr/share/maven/ref/repository
-    networks:
-      - network_transaction_conusmer  
-    ports: 
-      - 8081:8080
-    depends_on:
-      - rabbitmq
-      - redis
-      - postgres
+  # consumer-native:
+  #   build: 
+  #     context: transaction-consumer/
+  #     dockerfile: Dockerfile.native
+  #     args: 
+  #       MAVEN_OPTS: -Djava.net.preferIPv4Stack=true
+  #   volumes: 
+  #     - mvn-repo:/usr/share/maven/ref/repository
+  #   networks:
+  #     - network_transaction_conusmer  
+  #   ports: 
+  #     - 8081:8080
+  #   depends_on:
+  #     - rabbitmq
+  #     - redis
+  #     - postgres
 
   consumer-hotspot:
     build: 
       context: transaction-consumer/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.hotspot
     volumes: 
       - mvn-repo:/usr/share/maven/ref/repository
     networks:
       - network_transaction_conusmer
     ports: 
       - 8080:8080
+    deploy:
+      resources:
+        limits:
+          memory: 1200M
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres
+
+  consumer-openj9:
+    build: 
+      context: transaction-consumer/
+      dockerfile: Dockerfile.openj9
+    volumes: 
+      - mvn-repo:/usr/share/maven/ref/repository
+    networks:
+      - network_transaction_conusmer
+    ports: 
+      - 8180:8080
+    deploy:
+      resources:
+        limits:
+          memory: 1200M   
     depends_on:
       - rabbitmq
       - redis
@@ -76,6 +118,7 @@ volumes:
   dbdata:
   redis-data: 
   rabbitmq-data:   
+  prometheus-data:
 
 networks:
   network_transaction_conusmer:
