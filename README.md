@@ -2,6 +2,34 @@
 
 这个小Demo是一个简单的微服务。其业务背景源自实践，并进行了脱敏和简化。本质上是对消息队列里的消息进行消费：根据消息里的某些字段，计算一定时间段内的数值累加和计数，并将消息持久化在数据库里。
 
+## 目录结构
+
+```
+├── LICENSE
+├── README.md
+├── env                       开发环境的配置
+├── docker-compose.yml        开发环境
+├── run.sh                    启动开发环境
+├── documentation             项目文档                       
+├── transaction-consumer      主项目
+│   └── src/main/java/org/example/transaction/consumer
+│       ├── Main.java         主程序入口
+│       ├── adapter           与第三方服务交互
+│       │   └── ... 
+│       ├── config            依赖注入的配置
+│       │   └── ...
+│       ├── entity            与第三方服务交互使用的数据类
+│       │   └── ...
+│       ├── package-info.java
+│       ├── port              定义adapter与service交互的接口与数据类
+│       │   └── ...
+│       └── service           业务逻辑
+│           └── ...
+└── transaction-producer      消息生成工具，开发调试、性能测试都可以用
+
+```
+
+
 ## 组件选型
 
 微服务框架选择了Oracle的云原生框架Helidon-SE。这个框架是一个轻量级的HTTP微服务框架，可以用GraalVM编译成Native可执行文件，能够做到快速启动，快速响应。但是根据一些评测，运行速度比充分热身后的HotSpot应用要慢一些。没有选择组件更丰富的Helidon是因为Helidon-SE框架默认没有带DI依赖注入框架，可以试试其他选择。
