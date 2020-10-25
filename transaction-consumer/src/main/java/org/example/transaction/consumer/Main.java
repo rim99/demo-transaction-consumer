@@ -5,7 +5,7 @@ import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jsonp.JsonpSupport;
-import io.helidon.metrics.prometheus.PrometheusSupport;
+import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
 import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
@@ -62,13 +62,12 @@ public final class Main {
     }
 
     private static Routing createRouting(Config config) {
-        PrometheusSupport metrics = PrometheusSupport.create();
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
         return Routing.builder()
                 .register(health)                   // Health at "/health"
-                .register(metrics)                  // Metrics at "/metrics"
+                .register(MetricsSupport.create())  // Metrics at "/metrics"
                 .register("/transaction-aggregations",
                         DaggerModule.create().transactionAggregationHttpAPI())
                 .build();

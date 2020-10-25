@@ -25,6 +25,6 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/transaction-consumer.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-jar", "transaction-consumer.jar"]
+CMD ["java", "-XX:+UseG1GC", "-jar", "transaction-consumer.jar"]
 
 EXPOSE 8080
