@@ -1,6 +1,8 @@
 package org.example.transaction.consumer.adapter;
 
 import com.rabbitmq.client.*;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Histogram;
 import org.example.transaction.consumer.entity.mapper.TransactionMessageDeserializer;
 import org.example.transaction.consumer.port.Producer;
 import org.example.transaction.consumer.port.TransactionRecord;
@@ -17,7 +19,7 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
     private Connection connection;
     private String queueName;
 
-    private RabbitmqMessageReceiver(Connection connection, String queueName) throws IOException {
+    private RabbitmqMessageReceiver(Connection connection, String queueName) {
         this.consumers = new LinkedList<>();
         this.connection = connection;
         this.queueName = queueName;
@@ -37,12 +39,12 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
 
     private void recv() throws IOException {
         Channel channel = connection.createChannel();
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            TransactionMessageDeserializer.get().deserialize(delivery.getBody()).ifPresent(msg -> {
-                TransactionRecord record = msg.toTransactionRecord();
-                this.consumers.forEach(c -> c.accept(record));
-            });
-        };
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> { transactionMessageConsumeTimer.time(() -> {
+                    TransactionMessageDeserializer.get().deserialize(delivery.getBody()).ifPresent(msg -> {
+                        TransactionRecord record = msg.toTransactionRecord();
+                        this.consumers.forEach(c -> c.accept(record));
+                    });
+        }); };
         CancelCallback cancelCallback = consumerTag -> {
             System.out.println(" [x] Consumer " + consumerTag + " is cancelled'");
         };
@@ -69,5 +71,13 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
             }));
             return new RabbitmqMessageReceiver(connection, queueName);
         }
+    }
+
+    private static final Histogram transactionMessageConsumeTimer;
+    static {
+        transactionMessageConsumeTimer = Histogram
+                .build("transaction_message_consume_latency", "latency of transaction message consume")
+                .create();
+        CollectorRegistry.defaultRegistry.register(transactionMessageConsumeTimer);
     }
 }
