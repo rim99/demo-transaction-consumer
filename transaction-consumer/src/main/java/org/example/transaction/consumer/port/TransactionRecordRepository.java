@@ -1,8 +1,7 @@
 package org.example.transaction.consumer.port;
 
-import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
 
-@Singleton
 public interface TransactionRecordRepository {
-    void save(TransactionRecord record);
+    CompletableFuture<Void> save(TransactionRecord record);
 }

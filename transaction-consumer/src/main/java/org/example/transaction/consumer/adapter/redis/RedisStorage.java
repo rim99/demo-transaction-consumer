@@ -4,12 +4,16 @@ import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Histogram;
 import org.example.transaction.consumer.port.AggregationItem;
 
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -21,33 +25,47 @@ public class RedisStorage {
         this.connection = connection;
     }
 
-    public double add(RedisZsetIndex index, double amount) {
-        double added = 0D;
+    public CompletableFuture<Double> add(RedisZsetIndex index, double amount) {
+        CompletableFuture<Double> result = new CompletableFuture<>();
+        Histogram.Timer t = persistTimer.startTimer();
         try {
-            RedisCommands<String, String> syncCommands = connection.sync();
-            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            RedisAsyncCommands<String, String> asyncCommands = connection.async();
             String key = index.getZsetName() + index.getMemberName();
-            added = syncCommands.incrbyfloat(key, amount);
+            asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
+                    .thenAcceptBoth(
+                            asyncCommands.incrbyfloat(key, amount),
+                            (m, n) -> {
+                                t.observeDuration();
+                                result.complete(n);
+                            }
+            );
         } catch (Exception e) {
             System.out.println("Error when add amount [" + amount + "] for " + index + ", detail: " + e);
         }
-        return added;
+        return result;
     }
 
-    public double addOne(RedisZsetIndex index) {
-        long i = 0L;
+    public CompletableFuture<Long> addOne(RedisZsetIndex index) {
+        CompletableFuture<Long> result = new CompletableFuture<>();
+        Histogram.Timer t = persistTimer.startTimer();
         try {
-            RedisCommands<String, String> syncCommands = connection.sync();
-            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            RedisAsyncCommands<String, String> asyncCommands = connection.async();
             String key = index.getZsetName() + index.getMemberName();
-            i = syncCommands.incr(key);
+            asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
+                    .thenAcceptBoth(
+                            asyncCommands.incr(key),
+                            (m, n) -> {
+                                t.observeDuration();
+                                result.complete(n);
+                            });
         } catch (Exception e) {
             System.out.println("Error when add one for " + index + ", detail: " + e);
         }
-        return i;
+        return result;
     }
 
     public Set<AggregationItem> getAll(RedisZsetIndex start, RedisZsetIndex stop) {
+        Histogram.Timer t = persistTimer.startTimer();
         Set<AggregationItem> result = null;
         try {
             RedisCommands<String, String> syncCommands = connection.sync();
@@ -58,6 +76,7 @@ public class RedisStorage {
                 Double value = Double.valueOf(syncCommands.get(start.getZsetName()+k));
                 return new AggregationItem(stamp, value);
             }).collect(Collectors.toSet());
+            t.observeDuration();
         } catch (Exception e) {
             System.out.println("Error when get aggregation summaries from " + start + " to " + stop + ", detail: " + e);
         }
@@ -74,5 +93,19 @@ public class RedisStorage {
             }));
             return new RedisStorage(connection);
         }
+    }
+
+
+    private static final Histogram retrieveTimer;
+    private static final Histogram persistTimer;
+    static {
+        retrieveTimer = Histogram
+                .build("redis_retrieve_response_time", "response time of redis when retrieving")
+                .create();
+        persistTimer = Histogram
+                .build("redis_persist_response_time", "response time of redis when persisting")
+                .create();
+        CollectorRegistry.defaultRegistry.register(persistTimer);
+        CollectorRegistry.defaultRegistry.register(retrieveTimer);
     }
 }

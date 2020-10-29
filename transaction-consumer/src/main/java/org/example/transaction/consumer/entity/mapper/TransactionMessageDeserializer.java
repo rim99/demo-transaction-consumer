@@ -1,7 +1,6 @@
 package org.example.transaction.consumer.entity.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.dslplatform.json.DslJson;
 import org.example.transaction.consumer.entity.TransactionMessage;
 
 import java.io.IOException;
@@ -17,17 +16,17 @@ public class TransactionMessageDeserializer {
         return Singleton.instance;
     }
 
-    private ObjectReader reader;
+    private final DslJson<TransactionMessage> json;
 
     TransactionMessageDeserializer() {
-        reader = new ObjectMapper().reader();
+        json = new DslJson<>();
     }
 
     public Optional<TransactionMessage> deserialize(final byte[] data) {
         if (data != null) {
             try {
                 return Optional.ofNullable(
-                        reader.readValue(data, TransactionMessage.class));
+                        json.deserialize(TransactionMessage.class, data, data.length));
             } catch (IOException e) {
                 e.printStackTrace();
             }

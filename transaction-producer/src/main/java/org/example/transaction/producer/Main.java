@@ -22,9 +22,10 @@ public final class Main {
             prop.getProperty("password"),
             prop.getProperty("queueName")
         ).produce(new TransactionMessageGenerator(
-            TransactionMessageFactory.creator(), 
-            Integer.parseInt(prop.getProperty("messageTotal")
-        )));
+            TransactionMessageFactory.random(), 
+            Integer.parseInt(prop.getProperty("messageTotal")),
+            Integer.parseInt(prop.getProperty("ratePerSecond"))
+        ));
         System.exit(0);
     }
 }

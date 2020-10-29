@@ -10,7 +10,7 @@ public class TransactionMessageGenerator implements MessageGenerator {
     private int total;
     private TransactionMessageSerializer serializer;
 
-    public TransactionMessageGenerator(Supplier<TransactionMessage> supplier, int total) {
+    public TransactionMessageGenerator(Supplier<TransactionMessage> supplier, int total, int rate) {
         this.supplier = supplier;
         this.total = total;
         this.serializer = new TransactionMessageSerializer();
@@ -19,7 +19,7 @@ public class TransactionMessageGenerator implements MessageGenerator {
 	@Override
 	public Stream<byte[]> generate() {
 		return IntStream.range(0, total)
-            .mapToObj($ -> supplier.get())
+            .mapToObj($ -> this.supplier.get())
             .map(msg -> serializer.serialize(msg))
             .filter($ -> $ != null);
 	}

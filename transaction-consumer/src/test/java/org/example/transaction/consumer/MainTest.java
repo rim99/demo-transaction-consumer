@@ -8,6 +8,10 @@ import javax.json.Json;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 
+import com.google.inject.Binder;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import io.helidon.config.Config;
 import io.helidon.media.jsonp.JsonpSupport;
 import io.helidon.webclient.WebClient;
@@ -31,7 +35,12 @@ public class MainTest {
 
     @BeforeAll
     public static void startTheServer() throws Exception {
-        webServer = Main.startServer(Config.create()).get();
+        Injector injector = Guice.createInjector(new Module() {
+            @Override
+            public void configure(Binder binder) {
+            }
+        });
+        webServer = Main.startServer(Config.create(), injector).get();
 
         long timeout = 2000; // 2 seconds should be enough to start the server
         long now = System.currentTimeMillis();

@@ -46,11 +46,11 @@
 
     <properties>
         <mainClass>org.example.transaction.consumer.Main</mainClass>
-        <dagger.version>2.29.1</dagger.version>
+        <guice.version>4.2.3</guice.version>
         <rabbitmq.version>5.9.0</rabbitmq.version>
         <postgres.version>42.2.16</postgres.version>
         <lettuce.version>6.0.0.RELEASE</lettuce.version>
-        <jackson.version>2.11.3</jackson.version>
+        <dsl-json.version>1.9.5</dsl-json.version>
     </properties>
 
     <dependencies>
@@ -79,6 +79,10 @@
             <artifactId>helidon-metrics</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.helidon.metrics</groupId>
+            <artifactId>helidon-metrics-prometheus</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.helidon.dbclient</groupId> 
             <artifactId>helidon-dbclient</artifactId>
         </dependency>
@@ -87,9 +91,9 @@
             <artifactId>helidon-dbclient-jdbc</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.dagger</groupId>
-            <artifactId>dagger</artifactId>
-            <version>${dagger.version}</version>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -107,9 +111,9 @@
             <version>${lettuce.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>com.dslplatform</groupId>
+            <artifactId>dsl-json-java8</artifactId>
+            <version>${dsl-json.version}</version>
         </dependency>
 
         <!-- for test -->
@@ -139,15 +143,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>com.google.dagger</groupId>
-                            <artifactId>dagger-compiler</artifactId>
-                            <version>${dagger.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -21,13 +21,23 @@ rule_files:
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'consumer-hotspot'
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
     static_configs:
     - targets: [
         'consumer-hotspot:8080'
     ]
   - job_name: 'consumer-openj9'  
+    static_configs:
+    - targets: [
+        'consumer-openj9:8080'
+    ]
+  - job_name: 'consumer-hotspot-jvm'
+    metrics_path: '/jvm-metrics'
+    static_configs:
+    - targets: [
+        'consumer-hotspot:8080'
+    ]
+  - job_name: 'consumer-openj9-jvm'
+    metrics_path: '/jvm-metrics'
     static_configs:
     - targets: [
         'consumer-openj9:8080'
