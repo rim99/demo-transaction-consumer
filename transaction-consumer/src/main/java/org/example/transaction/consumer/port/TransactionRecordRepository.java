@@ -1,5 +1,7 @@
 package org.example.transaction.consumer.port;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface TransactionRecordRepository {
-    void save(TransactionRecord record);
+    CompletableFuture<Void> save(TransactionRecord record);
 }

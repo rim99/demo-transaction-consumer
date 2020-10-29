@@ -4,15 +4,16 @@ import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Histogram;
 import org.example.transaction.consumer.port.AggregationItem;
 
-
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -24,34 +25,43 @@ public class RedisStorage {
         this.connection = connection;
     }
 
-    public double add(RedisZsetIndex index, double amount) {
+    public CompletableFuture<Double> add(RedisZsetIndex index, double amount) {
+        CompletableFuture<Double> result = new CompletableFuture<>();
         Histogram.Timer t = persistTimer.startTimer();
-        double added = 0D;
         try {
-            RedisCommands<String, String> syncCommands = connection.sync();
-            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            RedisAsyncCommands<String, String> asyncCommands = connection.async();
             String key = index.getZsetName() + index.getMemberName();
-            added = syncCommands.incrbyfloat(key, amount);
-            t.observeDuration();
+            asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
+                    .thenAcceptBoth(
+                            asyncCommands.incrbyfloat(key, amount),
+                            (m, n) -> {
+                                t.observeDuration();
+                                result.complete(n);
+                            }
+            );
         } catch (Exception e) {
             System.out.println("Error when add amount [" + amount + "] for " + index + ", detail: " + e);
         }
-        return added;
+        return result;
     }
 
-    public double addOne(RedisZsetIndex index) {
+    public CompletableFuture<Long> addOne(RedisZsetIndex index) {
+        CompletableFuture<Long> result = new CompletableFuture<>();
         Histogram.Timer t = persistTimer.startTimer();
-        long i = 0L;
         try {
-            RedisCommands<String, String> syncCommands = connection.sync();
-            syncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName());
+            RedisAsyncCommands<String, String> asyncCommands = connection.async();
             String key = index.getZsetName() + index.getMemberName();
-            i = syncCommands.incr(key);
-            t.observeDuration();
+            asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
+                    .thenAcceptBoth(
+                            asyncCommands.incr(key),
+                            (m, n) -> {
+                                t.observeDuration();
+                                result.complete(n);
+                            });
         } catch (Exception e) {
             System.out.println("Error when add one for " + index + ", detail: " + e);
         }
-        return i;
+        return result;
     }
 
     public Set<AggregationItem> getAll(RedisZsetIndex start, RedisZsetIndex stop) {

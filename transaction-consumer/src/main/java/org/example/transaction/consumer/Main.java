@@ -51,7 +51,8 @@ public final class Main {
                 rabbitMQConfig.get("host").asString().get(),
                 rabbitMQConfig.get("username").asString().get(),
                 rabbitMQConfig.get("password").asString().get(),
-                rabbitMQConfig.get("queueName").asString().get()
+                rabbitMQConfig.get("queueName").asString().get(),
+                rabbitMQConfig.get("parallelism").asInt().get()
         );
         r.subscribe(injector.getInstance(TransactionRecordConsumeService.class));
         r.start();

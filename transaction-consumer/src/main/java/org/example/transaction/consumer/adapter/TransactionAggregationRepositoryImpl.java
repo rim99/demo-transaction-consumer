@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class TransactionAggregationRepositoryImpl implements TransactionAggregationRepository {
 
@@ -20,53 +21,83 @@ public class TransactionAggregationRepositoryImpl implements TransactionAggregat
     }
 
     @Override
-    public void updatePurchaseAmount(PaymentVendor vendor, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.add(RedisZsetIndex.createForPurchase(vendor, datetime, timeframe, AggregationType.AMOUNT), amount);
+    public CompletableFuture<Void> updatePurchaseAmount(PaymentVendor vendor, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.add(RedisZsetIndex.createForPurchase(vendor, datetime, timeframe, AggregationType.AMOUNT), amount)
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updatePurchaseAmount(Merchant merchant, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.add(RedisZsetIndex.createForPurchase(merchant, datetime, timeframe, AggregationType.AMOUNT), amount);
+    public CompletableFuture<Void> updatePurchaseAmount(Merchant merchant, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.add(RedisZsetIndex.createForPurchase(merchant, datetime, timeframe, AggregationType.AMOUNT), amount)
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updatePurchaseCount(PaymentVendor vendor, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.addOne(RedisZsetIndex.createForPurchase(vendor, datetime, timeframe, AggregationType.COUNT));
+    public CompletableFuture<Void> updatePurchaseCount(PaymentVendor vendor, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.addOne(RedisZsetIndex.createForPurchase(vendor, datetime, timeframe, AggregationType.COUNT))
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updatePurchaseCount(Merchant merchant, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.addOne(RedisZsetIndex.createForPurchase(merchant, datetime, timeframe, AggregationType.COUNT));
+    public CompletableFuture<Void> updatePurchaseCount(Merchant merchant, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.addOne(RedisZsetIndex.createForPurchase(merchant, datetime, timeframe, AggregationType.COUNT))
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateRefundAmount(PaymentVendor vendor, double amount, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
-        redisStorage.add(RedisZsetIndex.createForRefund(vendor, isValid, datetime, timeframe, AggregationType.AMOUNT), amount);
+    public CompletableFuture<Void> updateRefundAmount(PaymentVendor vendor, double amount, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.add(RedisZsetIndex.createForRefund(vendor, isValid, datetime, timeframe, AggregationType.AMOUNT), amount)
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateRefundAmount(Merchant merchant, double amount, OffsetDateTime dateTime, Boolean isValid, AggregationTimeFrame timeframe) {
-        redisStorage.add(RedisZsetIndex.createForRefund(merchant, isValid, dateTime, timeframe, AggregationType.AMOUNT), amount);
+    public CompletableFuture<Void> updateRefundAmount(Merchant merchant, double amount, OffsetDateTime dateTime, Boolean isValid, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.add(RedisZsetIndex.createForRefund(merchant, isValid, dateTime, timeframe, AggregationType.AMOUNT), amount)
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateRefundCount(PaymentVendor vendor, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
-        redisStorage.addOne(RedisZsetIndex.createForRefund(vendor, isValid, datetime, timeframe, AggregationType.COUNT));
+    public CompletableFuture<Void> updateRefundCount(PaymentVendor vendor, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.addOne(RedisZsetIndex.createForRefund(vendor, isValid, datetime, timeframe, AggregationType.COUNT))
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateRefundCount(Merchant merchant, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
-        redisStorage.addOne(RedisZsetIndex.createForRefund(merchant, isValid, datetime, timeframe, AggregationType.COUNT));
+    public CompletableFuture<Void> updateRefundCount(Merchant merchant, OffsetDateTime datetime, Boolean isValid, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.addOne(RedisZsetIndex.createForRefund(merchant, isValid, datetime, timeframe, AggregationType.COUNT))
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateAmountForType(PaymentType type, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.add(RedisZsetIndex.create(type, datetime, timeframe, AggregationType.AMOUNT), amount);
+    public CompletableFuture<Void> updateAmountForType(PaymentType type, double amount, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.add(RedisZsetIndex.create(type, datetime, timeframe, AggregationType.AMOUNT), amount)
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override
-    public void updateCountForType(PaymentType type, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
-        redisStorage.addOne(RedisZsetIndex.create(type, datetime, timeframe, AggregationType.COUNT));
+    public CompletableFuture<Void> updateCountForType(PaymentType type, OffsetDateTime datetime, AggregationTimeFrame timeframe) {
+        CompletableFuture<Void> r = new CompletableFuture<>();
+        redisStorage.addOne(RedisZsetIndex.create(type, datetime, timeframe, AggregationType.COUNT))
+                .thenApply(m -> r.complete(null));
+        return r;
     }
 
     @Override

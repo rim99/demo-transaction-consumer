@@ -21,6 +21,7 @@ rabbitmq:
   username: user
   password: passwd
   queueName: transaction_msg
+  parallelism: 5
 
 redis:
   host: redis

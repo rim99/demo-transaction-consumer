@@ -8,6 +8,7 @@ import org.example.transaction.consumer.port.TransactionRecordRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class TransactionRecordPostgresRepository implements TransactionRecordRepository {
@@ -20,9 +21,9 @@ public class TransactionRecordPostgresRepository implements TransactionRecordRep
     }
 
     @Override
-    public void save(TransactionRecord record) {
+    public CompletableFuture<Void> save(TransactionRecord record) {
         Histogram.Timer t = timer.startTimer();
-        pgClient.execute(exec -> exec
+        return pgClient.execute(exec -> exec
             .createInsert("INSERT INTO transaction_message VALUES (" 
                 + " :id , :mid , :uid , :datetime , :amount , "    
                 + " CAST( :currency AS PAYMENT_CURRENCY) ," 
@@ -45,7 +46,8 @@ public class TransactionRecordPostgresRepository implements TransactionRecordRep
             .addParam("originPurchaseTransactionId", record.getOriginPurchaseTransactionId().orElse(null))
             .execute())
                 .thenAccept(savedTotal -> t.observeDuration())
-                .exceptionallyAccept(Throwable::printStackTrace);
+                .exceptionallyAccept(Throwable::printStackTrace)
+                .toCompletableFuture();
     }
 
     private static final Histogram timer;
