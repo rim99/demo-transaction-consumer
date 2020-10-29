@@ -13,11 +13,11 @@ Average                 |   39ms        |  38ms
 P99                     |   110ms       |  75ms
 P999                    |   240ms       |  250ms
 
-5 min before end   |   Hotspot     | OpenJ9
- :--:              |    :--:       | :--:  
-Average            |   34ms        |  37ms
-P99                |   70ms        |  130ms
-P999               |   110ms       |  240ms
+5 min before end   |   Hotspot               | OpenJ9
+ :--:              |    :--:                 | :--:  
+Average            |   34ms                  |  37ms
+P99                |   70ms                  |  130ms
+P999               |   110ms (230ms mostly)  |  240ms
 
 
 ## index 2: memory usage
