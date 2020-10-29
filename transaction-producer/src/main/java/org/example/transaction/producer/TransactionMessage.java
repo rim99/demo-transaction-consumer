@@ -9,7 +9,7 @@ public class TransactionMessage {
     private String mid;
     private String uid;
     private String datetime;
-    private float amount;
+    private double amount;
     private String currency;
     private String type;
     private String vendor;
@@ -52,11 +52,11 @@ public class TransactionMessage {
         this.datetime = datetime;
     }
 
-    public float getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
