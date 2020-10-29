@@ -1,10 +1,10 @@
 package org.example.transaction.consumer.entity.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.dslplatform.json.DslJson;
+import com.dslplatform.json.JsonWriter;
 import org.example.transaction.consumer.port.AggregationItem;
 
+import java.io.IOException;
 import java.util.List;
 
 public class AggregationItemListSerializer {
@@ -17,17 +17,22 @@ public class AggregationItemListSerializer {
         return Singleton.instance;
     }
 
-    private ObjectWriter writer;
+    private final DslJson<AggregationItem> json;
+    private ThreadLocal<JsonWriter> writer;
 
     AggregationItemListSerializer() {
-        writer = new ObjectMapper().writer();
+        json = new DslJson<>();
+        writer = ThreadLocal.withInitial(json::newWriter);
     }
 
     public byte[] serialize(List<AggregationItem> data) {
         if (data == null) return null;
+        JsonWriter w = writer.get();
+        w.reset();
         try {
-            return writer.writeValueAsBytes(data);
-        } catch (JsonProcessingException e) {
+            json.serialize(w, data);
+            return w.toByteArray();
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
