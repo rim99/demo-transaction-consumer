@@ -30,7 +30,7 @@ avg   = 4.3440923
 stdev = 0.1498563
 
 --------
-JDK:         OpenJDK 11
+JDK:         OpenJDK 11 (Docker Image: openjdk:11-jre-slim:548394273fb4) 
 DI solution: Dagger2
 
 
