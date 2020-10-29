@@ -1,5 +1,7 @@
 package org.example.transaction.consumer;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.helidon.common.reactive.Single;
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
@@ -10,7 +12,9 @@ import io.helidon.metrics.prometheus.PrometheusSupport;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
 import org.example.transaction.consumer.adapter.RabbitmqMessageReceiver;
-import org.example.transaction.consumer.config.DaggerModule;
+import org.example.transaction.consumer.adapter.TransactionAggregationHttpAPI;
+import org.example.transaction.consumer.config.AppModule;
+import org.example.transaction.consumer.service.TransactionRecordConsumeService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +31,9 @@ public final class Main {
     public static void main(final String[] args) throws IOException, TimeoutException {
         long start = System.nanoTime();
         Config config = Config.create();
-        startMessageReceiver(config);
-        startServer(config)
+        Injector injector = Guice.createInjector(new AppModule());
+        startMessageReceiver(config, injector);
+        startServer(config, injector)
                 .thenAccept(ws -> System.out.println(
                         "Application has started in " +
                                 Duration.ofNanos(System.nanoTime() - start) +
@@ -40,7 +45,7 @@ public final class Main {
                 .exceptionallyAccept(Throwable::printStackTrace);
     }
 
-    static void startMessageReceiver(Config config) throws IOException, TimeoutException {
+    static void startMessageReceiver(Config config, Injector injector) throws IOException, TimeoutException {
         Config rabbitMQConfig = config.get("rabbitmq");
         RabbitmqMessageReceiver r = RabbitmqMessageReceiver.Builder.build(
                 rabbitMQConfig.get("host").asString().get(),
@@ -48,21 +53,21 @@ public final class Main {
                 rabbitMQConfig.get("password").asString().get(),
                 rabbitMQConfig.get("queueName").asString().get()
         );
-        r.subscribe(DaggerModule.create().transactionRecordConsumeService());
+        r.subscribe(injector.getInstance(TransactionRecordConsumeService.class));
         r.start();
     }
 
-    static Single<WebServer> startServer(Config config) throws IOException {
+    static Single<WebServer> startServer(Config config, Injector injector) throws IOException {
         setupLogging();
 
-        WebServer server = WebServer.builder(createRouting(config))
+        WebServer server = WebServer.builder(createRouting(injector))
                 .config(config.get("server"))
                 .addMediaSupport(JsonpSupport.create())
                 .build();
         return server.start();
     }
 
-    private static Routing createRouting(Config config) {
+    private static Routing createRouting(Injector injector) {
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
@@ -71,7 +76,7 @@ public final class Main {
                 .register(PrometheusSupport.create())  // Metrics at "/metrics"
                 .register(MetricsSupport.builder().webContext("/jvm-metrics").build())
                 .register("/transaction-aggregations",
-                        DaggerModule.create().transactionAggregationHttpAPI())
+                        injector.getInstance(TransactionAggregationHttpAPI.class))
                 .build();
     }
 
