@@ -34,9 +34,9 @@ public class RedisStorage {
             asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
                     .thenAcceptBoth(
                             asyncCommands.incrbyfloat(key, amount),
-                            (m, n) -> {
+                            (addedCount, incredVal) -> {
                                 t.observeDuration();
-                                result.complete(n);
+                                result.complete(incredVal);
                             }
             );
         } catch (Exception e) {
@@ -54,9 +54,9 @@ public class RedisStorage {
             asyncCommands.zadd(index.getZsetName(), index.getScore(), index.getMemberName())
                     .thenAcceptBoth(
                             asyncCommands.incr(key),
-                            (m, n) -> {
+                            (addedCount, incredVal) -> {
                                 t.observeDuration();
-                                result.complete(n);
+                                result.complete(incredVal);
                             });
         } catch (Exception e) {
             System.out.println("Error when add one for " + index + ", detail: " + e);
