@@ -36,6 +36,7 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
                 messagesConsumeTasks,
                 new ConsumerWorkerThreadFactory()
         );
+        doWhenShutdown(()-> this.consumerExecutor.shutdown());
     }
 
     public void start() throws IOException {
@@ -103,14 +104,14 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
             factory.setUsername(username);
             factory.setPassword(password);
             Connection connection = factory.newConnection();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            doWhenShutdown(() -> {
                 try { 
                     connection.close();
                     System.out.println("RabbitMq Connection closed");
                 } catch (Exception e) {
                     System.out.println("failed to close RabbitMq Connection, detail:" + e);
                 }
-            }));
+            });
             return new RabbitmqMessageReceiver(connection, queueName, parallelism);
         }
     }
@@ -121,5 +122,9 @@ public class RabbitmqMessageReceiver implements Producer<TransactionRecord> {
                 .build("transaction_message_consume_latency", "latency of transaction message consume")
                 .create();
         CollectorRegistry.defaultRegistry.register(transactionMessageConsumeTimer);
+    }
+
+    private static void doWhenShutdown(Runnable r) {
+        Runtime.getRuntime().addShutdownHook(new Thread(r));
     }
 }
