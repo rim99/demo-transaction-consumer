@@ -101,74 +101,65 @@ public class TransactionAggregationRepositoryImpl implements TransactionAggregat
     }
 
     @Override
-    public List<AggregationItem> retrieveAggregations(
-            LocalDateTime from, LocalDateTime to, AggregationTimeFrame timeframe, AggregationType aggregationType,
-            Optional<Merchant> merchant, Optional<PaymentType> transactionType, Optional<PaymentVendor> vendor) {
+    public List<AggregationItem> getRecordDuringTimeRange(LocalDateTime from, LocalDateTime to, AggregationTimeFrame timeframe, AggregationType aggregationType, List<PaymentType> payments) {
+        return payments.stream().map(pt -> {
+            RedisZsetIndex start = RedisZsetIndex.create(pt, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+            RedisZsetIndex stop = RedisZsetIndex.create(pt, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+            return redisStorage.getAll(start, stop);
+        }).collect(LinkedList::new, List::addAll, List::addAll);
+    }
 
-        List<PaymentType> payments = new ArrayList<>(2);
-        transactionType.ifPresentOrElse(payments::add, () -> {
-            payments.add(PaymentType.PURCHASE);
-            payments.add(PaymentType.REFUND);
-        });
-        List<AggregationItem> result = new LinkedList<>();
+    @Override
+    public List<AggregationItem> getRecordsByPaymentVendor(LocalDateTime from, LocalDateTime to, AggregationTimeFrame timeframe, AggregationType aggregationType, PaymentVendor vendor, List<PaymentType> payments) {
+        return payments.stream().map(pt -> {
+            List<AggregationItem> tmpResult = new LinkedList<>();
+            if (pt.equals(PaymentType.PURCHASE)) {
+                RedisZsetIndex start = RedisZsetIndex.createForPurchase(
+                        vendor, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                RedisZsetIndex stop = RedisZsetIndex.createForPurchase(
+                        vendor, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+            }
+            if (pt.equals(PaymentType.REFUND)) {
+                RedisZsetIndex start = RedisZsetIndex.createForRefund(
+                        vendor, true, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                RedisZsetIndex stop = RedisZsetIndex.createForRefund(
+                        vendor, true, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+                start = RedisZsetIndex.createForRefund(
+                        vendor, false, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                stop = RedisZsetIndex.createForRefund(
+                        vendor, false, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+            }
+            return tmpResult;
+        }).collect(LinkedList::new, List::addAll, List::addAll);
+    }
 
-        if (merchant.isPresent()) {
-            payments.forEach(pt -> {
-                if (pt.equals(PaymentType.PURCHASE)) {
-                    RedisZsetIndex start = RedisZsetIndex.createForPurchase(
-                            merchant.get(), OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    RedisZsetIndex stop = RedisZsetIndex.createForPurchase(
-                            merchant.get(), OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                }
-                if (pt.equals(PaymentType.REFUND)) {
-                    RedisZsetIndex start = RedisZsetIndex.createForRefund(
-                            merchant.get(), true, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    RedisZsetIndex stop = RedisZsetIndex.createForRefund(
-                            merchant.get(), true, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                    start = RedisZsetIndex.createForRefund(
-                            merchant.get(), false, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    stop = RedisZsetIndex.createForRefund(
-                            merchant.get(), false, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                }
-            });
-        }
-
-        if (result.isEmpty() && vendor.isPresent()) {
-            payments.forEach(pt -> {
-                if (pt.equals(PaymentType.PURCHASE)) {
-                    RedisZsetIndex start = RedisZsetIndex.createForPurchase(
-                            vendor.get(), OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    RedisZsetIndex stop = RedisZsetIndex.createForPurchase(
-                            vendor.get(), OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                }
-                if (pt.equals(PaymentType.REFUND)) {
-                    RedisZsetIndex start = RedisZsetIndex.createForRefund(
-                            vendor.get(), true, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    RedisZsetIndex stop = RedisZsetIndex.createForRefund(
-                            vendor.get(), true, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                    start = RedisZsetIndex.createForRefund(
-                            vendor.get(), false, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                    stop = RedisZsetIndex.createForRefund(
-                            vendor.get(), false, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                    result.addAll(redisStorage.getAll(start, stop));
-                }
-            });
-        }
-
-        if (result.isEmpty()) {
-            payments.forEach(pt -> {
-                RedisZsetIndex start = RedisZsetIndex.create(pt, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
-                RedisZsetIndex stop = RedisZsetIndex.create(pt, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
-                result.addAll(redisStorage.getAll(start, stop));
-            });
-        }
-
-        Collections.sort(result);
-        return result;
+    @Override
+    public List<AggregationItem> getRecordsByMerchant(LocalDateTime from, LocalDateTime to, AggregationTimeFrame timeframe, AggregationType aggregationType, Merchant merchant, List<PaymentType> payments) {
+        return payments.stream().map(pt -> {
+            List<AggregationItem> tmpResult = new LinkedList<>();
+            if (pt.equals(PaymentType.PURCHASE)) {
+                RedisZsetIndex start = RedisZsetIndex.createForPurchase(
+                        merchant, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                RedisZsetIndex stop = RedisZsetIndex.createForPurchase(
+                        merchant, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+            }
+            if (pt.equals(PaymentType.REFUND)) {
+                RedisZsetIndex start = RedisZsetIndex.createForRefund(
+                        merchant, true, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                RedisZsetIndex stop = RedisZsetIndex.createForRefund(
+                        merchant, true, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+                start = RedisZsetIndex.createForRefund(
+                        merchant, false, OffsetDateTime.of(from, ZoneOffset.UTC), timeframe, aggregationType);
+                stop = RedisZsetIndex.createForRefund(
+                        merchant, false, OffsetDateTime.of(to, ZoneOffset.UTC), timeframe, aggregationType);
+                tmpResult.addAll(redisStorage.getAll(start, stop));
+            }
+            return tmpResult;
+        }).collect(LinkedList::new, List::addAll, List::addAll);
     }
 }
