@@ -40,11 +40,9 @@
 
 ## 组件选型
 
-微服务框架选择了Oracle的云原生框架Helidon-SE。这个框架是一个轻量级的HTTP微服务框架，可以用GraalVM编译成Native可执行文件，能够做到快速启动，快速响应。但是根据一些评测，运行速度比充分热身后的HotSpot应用要慢一些。没有选择组件更丰富的Helidon是因为Helidon-SE框架默认没有带DI依赖注入框架，可以试试其他选择。
+微服务框架选择了Oracle的云原生框架Helidon-SE。这个框架是一个轻量级的HTTP微服务框架，可以用GraalVM编译成Native可执行文件，能够做到快速启动，快速响应。但是根据一些评测，运行速度比充分热身后的HotSpot应用要慢一些。
 
-依赖注入框架选择了Google的Dagger2。这是一个很特别的选择，是因为它可以在编译期即完成所有依赖的生成与注入。在运行时，整个服务内部的函数调用链更干净。相比之下，Spring往往在调用链中间生成很多层级的动态代理对象。
-
-Json的序列化库，一开始选择的是JVM圈里最快的DSL-Json。这个工具可以在编译期生成一些辅助类，在很多评测对比中表现很好。反而以前号称很快的Jackson反而跟这个差了很远。不过可惜的，用了Dagger2以后，DSL-Json在运行时就找不到编译期生成的辅助类了。这两者在默认设定下，存在某些冲突。不确定是否有某些设定可以让两个兼容。我暂时放弃了兼容的尝试，选择了Jackson。
+Json的序列化库，一开始选择的是JVM圈里最快的DSL-Json。这个工具可以在编译期生成一些辅助类，在很多评测对比中表现很好。反而以前号称很快的Jackson反而跟这个差了很远。
 
 对消息的聚合选择使用Redis来做。因为聚合都是操作最近的数据；过期的数据不再变更，可以在持久化到关系型数据库里。活跃的数据放在Redis里，就是因为快。原子操作丰富，事务也是非交互式的。
 
@@ -52,4 +50,8 @@ Json的序列化库，一开始选择的是JVM圈里最快的DSL-Json。这个�
 
 ## 性能测试
 
-TODO
+本来尝试用GraalVM编译native镜像，但是因为和Jedis、Lettuce有兼容性问题，暂时放弃。
+
+选择了Hotspot和OpenJ9两个JRE环境，分别简单的测试了一下运行时的表现。
+
+[Test Result](https://gitee.com/rim99/demo-transaction-consumer/blob/master/documentation/test-outcome/message-consume-test/20201029-guice-dsljson-parallel.md)
